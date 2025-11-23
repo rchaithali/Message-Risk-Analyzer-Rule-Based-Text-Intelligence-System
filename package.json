@@ -1,0 +1,30 @@
+{
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.11"
+  },
+  "name": "projectlvl1",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "Day 0: Setup complete.",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rchaithali/Risk-analyser-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rchaithali/Risk-analyser-api/issues"
+  },
+  "homepage": "https://github.com/rchaithali/Risk-analyser-api#readme"
+}
