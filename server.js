@@ -1,3 +1,4 @@
+const User= require("./models/User");
 const connectDB = require("./db");
 const express=require("express");
 const cors=require("cors");
@@ -10,6 +11,25 @@ app.get("/ping",(req,res)=> {
     console.log("Ping route hit");
     res.json({message:"pong"});
 });
+app.post("/register", async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+
+        const newUser = await User.create({
+            name,
+            email,
+            password
+        });
+
+        res.status(201).json({
+            message: "User registered successfully",
+            user: newUser
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 connectDB();
 
 const PORT = process.env.PORT || 5001;
