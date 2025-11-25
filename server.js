@@ -1,3 +1,4 @@
+const connectDB = require("./db");
 const express=require("express");
 const cors=require("cors");
 const dotenv=require("dotenv");
@@ -9,7 +10,9 @@ app.get("/ping",(req,res)=> {
     console.log("Ping route hit");
     res.json({message:"pong"});
 });
-const PORT = process.env.PORT || 5000;
+connectDB();
+
+const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
   console.log(`Server is ruuning on port ${PORT}`);
