@@ -1,3 +1,5 @@
+const auth=require("./middleware/auth");
+const jwt=require("jsonwebtoken");
 const bcrypt=require("bcrypt");
 const User= require("./models/User");
 const connectDB = require("./db");
@@ -43,8 +45,14 @@ app.post("/login", async(req,res) => {
         if(!isMatch){
             return res.status(404).json({error:"Invalid Password"});
         }
+        const token=jwt.sign(
+            {id:user._id,email:user.email},
+            process.env.JWT_SECRET,
+            {expiresIn:"1h"}
+        );
         res.json({
             message:"Login succesful",
+            token,
             user:{
                 name:user.name,
                 email:user.email,
@@ -54,6 +62,12 @@ app.post("/login", async(req,res) => {
     } catch(err){
         res.status(500).json({error:"Login failed",details:err});
     }
+});
+app.get("/profile",auth,(req,res)=>{
+    res.json({
+        messsage:"Access granted",
+        user:req.user
+    });
 });
 
 connectDB();
