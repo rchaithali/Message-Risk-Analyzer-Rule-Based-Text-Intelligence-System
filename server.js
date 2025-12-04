@@ -17,6 +17,7 @@ app.get("/ping",(req,res)=> {
 app.get("/health", (req, res) => {
     res.json({ status: "ok", uptime: process.uptime() });
 });
+
 app.post("/register", async(req,res) => {
     try{const {name,email,password}=req.body;
     const hashedPassword=await bcrypt.hash(password,10);
