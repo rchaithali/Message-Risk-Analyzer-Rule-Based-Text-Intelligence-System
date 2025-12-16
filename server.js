@@ -73,7 +73,28 @@ app.get("/profile",auth,(req,res)=>{
         user:req.user
     });
 });
+app.put("/profile", auth, async (req, res) => {
+  try {
+    const { name } = req.body;
 
+    if (!name) {
+      return res.status(400).json({ error: "Name is required" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      { name },
+      { new: true }
+    ).select("-password");
+
+    res.json({
+      message: "Profile updated successfully",
+      user: updatedUser
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Error updating profile" });
+  }
+});
 connectDB();
 
 const PORT = process.env.PORT || 5001;
