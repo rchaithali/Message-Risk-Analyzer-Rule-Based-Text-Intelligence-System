@@ -5,4 +5,4 @@ Day 1: Backend setup server,/Ping
 Day 2: Connecting MongoDB+User schema
 Day 3: bcrypt, JWT and Auth(middleware)
 ////project last stage
-//
+//mongodb new user:appuser
