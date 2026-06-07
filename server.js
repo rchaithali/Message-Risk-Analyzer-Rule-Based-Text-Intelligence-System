@@ -8,6 +8,14 @@ const cors=require("cors");
 const dotenv=require("dotenv");
 dotenv.config();
 const app=express();
+const riskKeywords = {
+    kill: 50,
+    die: 40,
+    hate: 20,
+    idiot: 15,
+    stupid: 15,
+    useless: 15
+};
 app.use(express.json());
 app.use(cors());
 app.get("/ping",(req,res)=> {
@@ -157,6 +165,36 @@ app.put("/change-password", auth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: "Error changing password" });
   }
+});
+app.post("/analyze", auth, (req, res) => {
+    const { message } = req.body;
+    if (!message) {
+        return res.status(400).json({ error: "Message is required" });
+    }
+    let score = 0;
+    let matchedKeywords = [];
+    for (const keyword in riskKeywords) {
+        if (message.toLowerCase().includes(keyword)) {
+            score += riskKeywords[keyword];
+            matchedKeywords.push(keyword);
+        }
+    }
+    let risk="safe";
+    if(score>=50){
+        risk="high";
+    } else if(score>=30){
+        risk="medium";
+    } else if(score>=10){
+        risk="low";
+    }
+        res.json({
+        score,
+        risk,
+        matchedKeywords
+    });
+
+  
+
 });
 connectDB();
 
