@@ -2,6 +2,7 @@ const auth=require("./middleware/auth");
 const jwt=require("jsonwebtoken");
 const bcrypt=require("bcrypt");
 const User= require("./models/User");
+const Analysis = require("./models/Analysis");
 const connectDB = require("./db");
 const express=require("express");
 const cors=require("cors");
@@ -159,18 +160,67 @@ app.put("/change-password", auth, async (req, res) => {
     res.status(500).json({ error: "Error changing password" });
   }
 });
-app.post("/analyze", auth, (req, res) => {
-    const { message } = req.body;
+app.post("/analyze", (req, res) => {
+   const { message
+    } = req.body;
 
-    if (!message) {
-        return res.status(400).json({
-            error: "Message is required"
-        });
-    }
+if (!message) {
+    return res.status(400).json({
+        error: "Message is required"
+    });
+}
 
-    const result = analyzeMessage(message);
+const result = analyzeMessage(message);
 
     res.json(result);
+});
+app.post("/history", auth, async (req, res) => {
+  try {
+    const { message, score, risk, matchedKeywords, explanation } = req.body;
+
+    if (!message || score === undefined || !risk || !explanation) {
+      return res.status(400).json({
+        error: "Analysis data is required",
+      });
+    }
+
+    const savedAnalysis = new Analysis({
+      user: req.user.id,
+      message,
+      score,
+      risk,
+      matchedKeywords,
+      explanation,
+    });
+
+    await savedAnalysis.save();
+
+    res.status(201).json({
+      message: "Analysis saved successfully",
+      analysis: savedAnalysis,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: "Error saving analysis",
+    });
+  }
+});
+
+app.get("/history", auth, async (req, res) => {
+  try {
+    const history = await Analysis.find({ user: req.user.id }).sort({
+      createdAt: -1,
+    });
+
+    res.json({
+      count: history.length,
+      history,
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: "Error fetching analysis history",
+    });
+  }
 });
 connectDB();
 
