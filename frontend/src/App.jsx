@@ -28,7 +28,7 @@ function App() {
       setLoginMessage("");
       setError("");
 
-      const response = await fetch("http://localhost:5001/login", {
+      const response = await fetch("https://message-risk-analyzer-backend.onrender.com/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,7 +67,7 @@ function App() {
       setResult(null);
       setHistoryMessage("");
 
-      const response = await fetch("http://localhost:5001/analyze", {
+      const response = await fetch("https://message-risk-analyzer-backend.onrender.com/analyze", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -106,7 +106,7 @@ function App() {
       setLoading(true);
       setHistoryMessage("");
 
-      const response = await fetch("http://localhost:5001/history", {
+      const response = await fetch("https://message-risk-analyzer-backend.onrender.com/history", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -145,7 +145,7 @@ function App() {
       setLoading(true);
       setHistoryMessage("");
 
-      const response = await fetch("http://localhost:5001/history", {
+      const response = await fetch("https://message-risk-analyzer-backend.onrender.com/history", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
