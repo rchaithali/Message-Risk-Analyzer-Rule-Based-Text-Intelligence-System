@@ -29,6 +29,15 @@ const riskKeywords = {
   bastard: 20,
 };
 
+const positiveKeywords = {
+  like: 10,
+  love: 15,
+  respect: 15,
+  trust: 10,
+  care: 10,
+  support: 10,
+};
+
 const negationWords = [
   "not",
   "no",
@@ -64,7 +73,9 @@ function analyzeMessage(message) {
   let score = 0;
   let matchedKeywords = [];
   let ignoredKeywords = [];
+  let negatedPositiveKeywords = [];
 
+  // Detect bad/risky words
   for (const keyword in riskKeywords) {
     words.forEach((word, index) => {
       if (word === keyword) {
@@ -78,8 +89,19 @@ function analyzeMessage(message) {
     });
   }
 
+  // Detect good words used negatively
+  for (const keyword in positiveKeywords) {
+    words.forEach((word, index) => {
+      if (word === keyword && isNegated(words, index)) {
+        score += positiveKeywords[keyword];
+        negatedPositiveKeywords.push(keyword);
+      }
+    });
+  }
+
   matchedKeywords = [...new Set(matchedKeywords)];
   ignoredKeywords = [...new Set(ignoredKeywords)];
+  negatedPositiveKeywords = [...new Set(negatedPositiveKeywords)];
 
   let risk = "safe";
 
@@ -91,19 +113,22 @@ function analyzeMessage(message) {
     risk = "low";
   }
 
-  let explanation = "No risky keywords detected.";
+ let explanation = "No risky keywords detected.";
 
-  if (matchedKeywords.length > 0) {
-    explanation = `Detected ${matchedKeywords.length} risk keyword(s) contributing to the ${risk} risk classification.`;
-  } else if (ignoredKeywords.length > 0) {
-    explanation = `Detected ${ignoredKeywords.length} risky keyword(s), but the sentence appears safe because the keyword was used with negation.`;
-  }
+if (matchedKeywords.length > 0) {
+  explanation = `Detected ${matchedKeywords.length} risky keyword(s) contributing to the ${risk} risk classification.`;
+} else if (negatedPositiveKeywords.length > 0) {
+  explanation = `Detected ${negatedPositiveKeywords.length} positive keyword(s) used with negation, indicating mildly negative language.`;
+} else if (ignoredKeywords.length > 0) {
+  explanation = `Detected ${ignoredKeywords.length} risky keyword(s), but the sentence appears safe because the keyword was used with negation.`;
+}
 
   return {
     score,
     risk,
     matchedKeywords,
     ignoredKeywords,
+    negatedPositiveKeywords,
     explanation,
   };
 }
