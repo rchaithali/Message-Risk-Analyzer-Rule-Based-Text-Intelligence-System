@@ -347,3 +347,8 @@ input:focus {
   color: #cbd5e1;
   line-height: 1.6;
 }
+.loading-message {
+  margin-top: 16px;
+  color: #7dd3fc;
+  font-weight: 600;
+}

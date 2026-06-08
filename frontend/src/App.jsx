@@ -1,12 +1,15 @@
 import { useState } from "react";
 import "./App.css";
 
+const API_BASE_URL = "https://message-risk-analyzer-backend.onrender.com";
+
 function App() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [token, setToken] = useState("");
-  const [loginMessage, setLoginMessage] = useState("");
+  const [authMessage, setAuthMessage] = useState("");
 
   const [text, setText] = useState("");
   const [result, setResult] = useState(null);
@@ -14,21 +17,60 @@ function App() {
   const [history, setHistory] = useState([]);
   const [historyMessage, setHistoryMessage] = useState("");
 
-  const [loading, setLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = async () => {
-    if (!email.trim() || !password.trim()) {
-      setLoginMessage("Email and password are required.");
+  const handleRegister = async () => {
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      setAuthMessage("Name, email, and password are required.");
       return;
     }
 
     try {
-      setLoading(true);
-      setLoginMessage("");
+      setLoadingAction("register");
+      setAuthMessage("");
       setError("");
+      setHistoryMessage("");
 
-      const response = await fetch("https://message-risk-analyzer-backend.onrender.com/login", {
+      const response = await fetch(`${API_BASE_URL}/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed.");
+      }
+
+      setAuthMessage("Account created successfully. You can now login.");
+    } catch (err) {
+      setAuthMessage(err.message);
+    } finally {
+      setLoadingAction("");
+    }
+  };
+
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      setAuthMessage("Email and password are required.");
+      return;
+    }
+
+    try {
+      setLoadingAction("login");
+      setAuthMessage("");
+      setError("");
+      setHistoryMessage("");
+
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -46,11 +88,11 @@ function App() {
       }
 
       setToken(data.token);
-      setLoginMessage("Login successful. You can now save and view analysis history.");
+      setAuthMessage("Login successful. You can now save and view analysis history.");
     } catch (err) {
-      setLoginMessage(err.message);
+      setAuthMessage(err.message);
     } finally {
-      setLoading(false);
+      setLoadingAction("");
     }
   };
 
@@ -62,12 +104,12 @@ function App() {
     }
 
     try {
-      setLoading(true);
+      setLoadingAction("analyze");
       setError("");
       setResult(null);
       setHistoryMessage("");
 
-      const response = await fetch("https://message-risk-analyzer-backend.onrender.com/analyze", {
+      const response = await fetch(`${API_BASE_URL}/analyze`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,14 +122,16 @@ function App() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Something went wrong while analyzing.");
+        throw new Error(
+          data.error || data.message || "Something went wrong while analyzing."
+        );
       }
 
       setResult(data);
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      setLoadingAction("");
     }
   };
 
@@ -103,10 +147,10 @@ function App() {
     }
 
     try {
-      setLoading(true);
+      setLoadingAction("save");
       setHistoryMessage("");
 
-      const response = await fetch("https://message-risk-analyzer-backend.onrender.com/history", {
+      const response = await fetch(`${API_BASE_URL}/history`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -131,7 +175,7 @@ function App() {
     } catch (err) {
       setHistoryMessage(err.message);
     } finally {
-      setLoading(false);
+      setLoadingAction("");
     }
   };
 
@@ -142,10 +186,10 @@ function App() {
     }
 
     try {
-      setLoading(true);
+      setLoadingAction("history");
       setHistoryMessage("");
 
-      const response = await fetch("https://message-risk-analyzer-backend.onrender.com/history", {
+      const response = await fetch(`${API_BASE_URL}/history`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -163,7 +207,7 @@ function App() {
     } catch (err) {
       setHistoryMessage(err.message);
     } finally {
-      setLoading(false);
+      setLoadingAction("");
     }
   };
 
@@ -186,6 +230,33 @@ function App() {
     return "safe-risk";
   };
 
+  const getLoadingMessage = () => {
+    if (loadingAction === "register") {
+      return "Creating account. Free hosting may take a few seconds to respond.";
+    }
+
+    if (loadingAction === "login") {
+      return "Logging in. Free hosting may take a few seconds to respond.";
+    }
+
+    if (loadingAction === "analyze") {
+      return "Analyzing message. Free hosting may take a few seconds to respond.";
+    }
+
+    if (loadingAction === "save") {
+      return "Saving analysis. Free hosting may take a few seconds to respond.";
+    }
+
+    if (loadingAction === "history") {
+      return "Loading saved history. Free hosting may take a few seconds to respond.";
+    }
+
+    return "";
+  };
+
+  const isAuthSuccess =
+    authMessage.includes("successful") || authMessage.includes("created");
+
   return (
     <main className="app">
       <section className="hero-section">
@@ -194,15 +265,26 @@ function App() {
         <h1>Analyze text for risk, toxicity, and unsafe language</h1>
 
         <p className="subtitle">
-          A rule-based text intelligence system with public analysis and JWT-protected
-          saved history for logged-in users.
+          A rule-based text intelligence system with public analysis and
+          JWT-protected saved history for logged-in users.
         </p>
       </section>
 
       <section className="analyzer-card">
-        <h2 className="section-title">Login to Save History</h2>
+        <h2 className="section-title">Create Account or Login</h2>
 
         <div className="form-grid">
+          <div>
+            <label htmlFor="name">Name</label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="Enter name for signup"
+            />
+          </div>
+
           <div>
             <label htmlFor="email">Email</label>
             <input
@@ -210,7 +292,7 @@ function App() {
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="Enter registered email"
+              placeholder="Enter email"
             />
           </div>
 
@@ -227,14 +309,26 @@ function App() {
         </div>
 
         <div className="actions">
-          <button onClick={handleLogin} disabled={loading}>
-            {loading ? "Please wait..." : "Login"}
+          <button onClick={handleRegister} disabled={loadingAction !== ""}>
+            {loadingAction === "register" ? "Creating account..." : "Sign Up"}
+          </button>
+
+          <button
+            className="secondary-btn"
+            onClick={handleLogin}
+            disabled={loadingAction !== ""}
+          >
+            {loadingAction === "login" ? "Logging in..." : "Login"}
           </button>
         </div>
 
-        {loginMessage && (
-          <p className={token ? "success-message" : "error-message"}>
-            {loginMessage}
+        {(loadingAction === "register" || loadingAction === "login") && (
+          <p className="loading-message">{getLoadingMessage()}</p>
+        )}
+
+        {authMessage && (
+          <p className={isAuthSuccess ? "success-message" : "error-message"}>
+            {authMessage}
           </p>
         )}
       </section>
@@ -251,14 +345,24 @@ function App() {
         />
 
         <div className="actions">
-          <button onClick={handleAnalyze} disabled={loading}>
-            {loading ? "Analyzing..." : "Analyze Message"}
+          <button onClick={handleAnalyze} disabled={loadingAction !== ""}>
+            {loadingAction === "analyze"
+              ? "Analyzing message..."
+              : "Analyze Message"}
           </button>
 
-          <button className="secondary-btn" onClick={handleClear}>
+          <button
+            className="secondary-btn"
+            onClick={handleClear}
+            disabled={loadingAction !== ""}
+          >
             Clear
           </button>
         </div>
+
+        {loadingAction === "analyze" && (
+          <p className="loading-message">{getLoadingMessage()}</p>
+        )}
 
         {error && <p className="error-message">{error}</p>}
       </section>
@@ -309,17 +413,31 @@ function App() {
           )}
 
           <div className="actions result-actions">
-            <button onClick={handleSaveAnalysis} disabled={loading}>
-              Save Analysis
+            <button onClick={handleSaveAnalysis} disabled={loadingAction !== ""}>
+              {loadingAction === "save" ? "Saving analysis..." : "Save Analysis"}
             </button>
 
-            <button className="secondary-btn" onClick={handleViewHistory} disabled={loading}>
-              View History
+            <button
+              className="secondary-btn"
+              onClick={handleViewHistory}
+              disabled={loadingAction !== ""}
+            >
+              {loadingAction === "history" ? "Loading history..." : "View History"}
             </button>
           </div>
 
+          {(loadingAction === "save" || loadingAction === "history") && (
+            <p className="loading-message">{getLoadingMessage()}</p>
+          )}
+
           {historyMessage && (
-            <p className={historyMessage.includes("success") || historyMessage.includes("Fetched") ? "success-message" : "error-message"}>
+            <p
+              className={
+                historyMessage.includes("success") || historyMessage.includes("Fetched")
+                  ? "success-message"
+                  : "error-message"
+              }
+            >
               {historyMessage}
             </p>
           )}
