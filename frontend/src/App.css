@@ -58,10 +58,13 @@ h1 {
   background: rgba(15, 23, 42, 0.9);
   border: 1px solid rgba(148, 163, 184, 0.25);
   border-radius: 24px;
-  padding: 28px;
+  padding: 40px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
 }
-
+/* Adds visible gap between the login/signup card and message analyzer card */
+.analyzer-card + .analyzer-card {
+  margin-top: 32px;
+}
 .analyzer-card label {
   display: block;
   margin-bottom: 12px;
